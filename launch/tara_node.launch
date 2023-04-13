@@ -1,0 +1,15 @@
+<launch>
+    <node pkg="tara_ros2" exec="tara_node" name="tara_node" output="screen" namespace= "camera">
+        <param name="left_image_topic" value="infra1/image_rect_raw"/>
+        <param name="right_image_topic" value="infra2/image_rect_raw"/>
+        <param name="usb_device_id" value="0"/>
+        <param name="image_width" value="752"/>
+        <param name="image_height" value="480"/>
+
+        <remap from="/camera/left_info" to="/camera/infra1/camera_info"/>
+        <remap from="/camera/right_info" to="/camera/infra2/camera_info"/>
+        <remap from="/camera/left_image" to="/camera/infra1/image_rect_raw"/>
+        <remap from="/camera/right_image" to="/camera/infra2/image_rect_raw"/>
+        <remap from="/camera/imu" to="/camera/gyro/sample"/>
+    </node>
+</launch>
