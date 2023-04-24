@@ -110,15 +110,27 @@ namespace tara_ros {
             return;
         }
 
+        bool rectify_image = true;
+        get_parameter("rectify_images", rectify_image);
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "rectify_images:" << (rectify_image ? "true" : "false"));
+
         leftInfo.header.frame_id = "";
         rightInfo.header.frame_id = "";
         leftInfo.header.stamp = now();
         rightInfo.header.stamp = leftInfo.header.stamp;
         leftInfo.width = rightInfo.width = width;
         leftInfo.height = rightInfo.height = height;
-        for (int i = 0; i < 12; i++) {
-            leftInfo.p[i] = disparity._TaraCamParameters.PRect1.at<double>(i);
-            rightInfo.p[i] = disparity._TaraCamParameters.PRect2.at<double>(i);
+
+        if (rectify_image) {
+            for (int i = 0; i < 12; i++) {
+                leftInfo.p[i] = disparity._TaraCamParameters.PRect1.at<double>(i);
+                rightInfo.p[i] = disparity._TaraCamParameters.PRect2.at<double>(i);
+            }
+        } else {
+            for (int i = 0; i < 12; i++) {
+                leftInfo.p[i] = disparity._TaraCamParameters.P1.at<double>(i);
+                rightInfo.p[i] = disparity._TaraCamParameters.P2.at<double>(i);
+            }
         }
 
         // Publish camera info every 2 seconds.
@@ -210,9 +222,12 @@ namespace tara_ros {
         leftImageMsg.header.frame_id = "left_image";
         rightImageMsg.header.frame_id = "right_image";
 
+        bool rectify_image = true;
+        get_parameter("rectify_images", rectify_image);
+
         int m = 0;
         while(running) {
-            if (!disparity.GrabFrame(&leftImage, &rightImage, &timeVal,true)) {
+            if (!disparity.GrabFrame(&leftImage, &rightImage, &timeVal, rectify_image)) {
                 RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Camera disparity.GrabFrame() Failed!");
                 rclcpp::shutdown();
                 break;
